@@ -1,0 +1,25 @@
+name: "safmr"
+title: "Small Area Fair Market Rent"
+theme: theme.css
+favicon: images/favicon.ico
+description: |
+  A review of the small area fair market rent by zip code in the City of Dallas in comparison to average actual rent values.
+output_dir: "docs"
+navbar:
+  logo:
+    image: images/CPAL_Logo.png
+    href: https://childpovertyactionlab.github.io/safmr/
+  right:
+    - text: "Home"
+      href: index.html
+#    - text: "SAFMR Map"
+#      href: safmr-map.html
+    - text: "About"
+      menu:
+#        - text: "First About"
+#          href: first-about.html
+#        - text: "Second About"
+#          href: second-about.html
+        - text: "CPAL"
+          href: https://childpovertyactionlab.org/
+output: distill::distill_article

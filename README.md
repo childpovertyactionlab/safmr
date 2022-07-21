@@ -1,2 +1,11 @@
-# safmr
-Differential of the Small Area Fair Market Rent relative to actual market rent by zip code.
+# READ ME CONTENT FOR GITHUB REPO
+Description of Project
+
+# Data Dictionary
+Main things you need to know to use this repo
+
+# Methods
+Method used to generate this repo.
+
+# Things to know
+What else should be added here

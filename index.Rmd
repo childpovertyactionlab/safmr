@@ -1,0 +1,98 @@
+---
+title: 'Home'
+output:
+  distill::distill_article:
+    toc:false:
+      theme: theme.css
+favicon: "images/favicon.ico"
+github-repo: childpovertyactionlab/safmr
+---
+
+```{r Library Loading and Path Set-Up, include = FALSE}
+#### Libraries to load #####
+library(tidyverse)
+library(sf)
+library(leaflet)
+library(mapboxapi)
+library(rio)
+library(CPALtools)
+
+libDB <- "C:/Users/micha/CPAL Dropbox/" # Michael Laptop
+#libDB <- "E:/CPAL Dropbox/" # Michael Desktop
+
+```
+
+```{r, Data and File Import, include = FALSE}
+# simple boundary layer of the city of dallas
+dallas <- st_read("data/dallas_simpleboundary.geojson") %>%
+  st_transform(crs = 4326)
+
+# layer of zip codes with safmr and average asking rent in city of dallas
+safmr <- st_read("data/safmr_zcta.geojson") %>%
+  st_transform(crs = 4326) %>%
+  filter(!is.na(medRent2BR)) %>%
+  st_intersection(., dallas)
+```
+
+## Small Area Fair Market Rent Difference from Average Rent
+
+This map is generated using 
+
+* Small Area Fair Market Rent estimates from the Department of Housing and Urban Development for Q1 2022
+* Two-Bedroom average rent for multi-family apartment complexes from CoStar for Q1 2022
+
+CoStar data is aggregated to the zip code level and averaged for all complexes within the boundaries of the City of Dallas.
+The 'Rent Difference' metric calculates the difference between SAFMR and average rent for a zip code.
+
+
+
+```{r Leaflet Map, echo = FALSE, message=FALSE, warning=FALSE, layout = "l-body-outset", fig.height=10}
+#names(safmr)
+#min(safmr$RentDiff, na.rm = TRUE)
+#max(safmr$RentDiff, na.rm = TRUE)
+
+rent.labels <- c("Less than SAFMR",
+                 "No Greater than $250 SAFRM",
+                 "Greater than $250 SAFRM")
+
+rent.bins <-c(-500, 0, 250, 1500)
+rent.pal <- colorBin(palette = pal_cpaltri, 
+                     domain = safmr$RentDiff, 
+                     bins = rent.bins, 
+                     na.color = "#595959")
+
+bbox <- st_bbox(dallas) %>%
+  as.vector()
+
+popupRent <- paste0("<b>", "Zip Code: ", "</b>", safmr$GEOID, "<br>",
+                "<b>", "Total Multi-Family CoStar: ", "</b>", safmr$TotMF, "<br>",
+                "<b>", "Fair Market Rent 2-Bedroom: ", "</b>", "$", safmr$FairMrkt2BR, "<br>",
+                "<b>", "Medium Rent 2-Bedroom: ", "</b>", "$", safmr$medRent2BR, "<br>",
+                "<b>", "Rent Difference: ", "</b>", "$", safmr$RentDiff, "<br>"
+                )
+
+leaflet() %>%
+  fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>%
+  addTiles(urlTemplate = cpal_mapbox, attribution = cpal_leaflet) %>%
+  addPolygons(data = safmr,
+              fillColor = ~rent.pal(RentDiff),
+              weight = 1,
+              opacity = 0.8,
+              color = "#FFFFFF",
+              fillOpacity = 0.7,
+              popup = ~popupRent,
+              highlight = highlightOptions(
+                weight = 4,
+                color = "#FFFFFF",
+                fillOpacity = 0.4,
+                bringToFront = TRUE)) %>%
+    addLegend(data = safmr,
+            pal = rent.pal, 
+            values = ~rent.bins, 
+            opacity = 1, 
+            title = "SAFRM to Average Rent Difference",
+            position = "bottomright",
+            labFormat = function(type, cuts, p){  # Here's the trick
+                                                  paste0(rent.labels)
+                             })
+```
