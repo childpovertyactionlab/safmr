@@ -90,7 +90,7 @@ leaflet() %>%
             pal = rent.pal, 
             values = ~rent.bins, 
             opacity = 1, 
-            title = "SAFMR to Average Rent Difference",
+            title = "Market Asking Ren is:",
             position = "bottomright",
             labFormat = function(type, cuts, p){  # Here's the trick
                                                   paste0(rent.labels)
