@@ -38,13 +38,13 @@ safmr <- st_read("data/safmr_zcta.geojson") %>%
 
 This map is generated using 
 
-* Small Area Fair Market Rent estimates from the Department of Housing and Urban Development for Q1 2022
+* Small Area Fair Market Rent estimates from the Department of Housing and Urban Development for 2022
 * Two-Bedroom average rent for multi-family apartment complexes from CoStar for Q1 2022
 
 CoStar data is aggregated to the zip code level and averaged for all complexes within the boundaries of the City of Dallas.
 The 'Rent Difference' metric calculates the difference between SAFMR and average rent for a zip code.
 
-
+CoStar tracks properties with five or more units, so data on smaller properties with 1-4 units is not reflected here.
 
 ```{r Leaflet Map, echo = FALSE, message=FALSE, warning=FALSE, layout = "l-body-outset", fig.height=10}
 #names(safmr)
@@ -52,8 +52,8 @@ The 'Rent Difference' metric calculates the difference between SAFMR and average
 #max(safmr$RentDiff, na.rm = TRUE)
 
 rent.labels <- c("Less than SAFMR",
-                 "No Greater than $250 SAFRM",
-                 "Greater than $250 SAFRM")
+                 "Up to $250 more than SAFRM",
+                 "More than $250 over SAFRM")
 
 rent.bins <-c(-500, 0, 250, 1500)
 rent.pal <- colorBin(palette = pal_cpaltri, 
@@ -65,9 +65,9 @@ bbox <- st_bbox(dallas) %>%
   as.vector()
 
 popupRent <- paste0("<b>", "Zip Code: ", "</b>", safmr$GEOID, "<br>",
-                "<b>", "Total Multi-Family CoStar: ", "</b>", safmr$TotMF, "<br>",
+                "<b>", "Multi-Family Properties: ", "</b>", safmr$TotMF, "<br>",
                 "<b>", "Fair Market Rent 2-Bedroom: ", "</b>", "$", safmr$FairMrkt2BR, "<br>",
-                "<b>", "Medium Rent 2-Bedroom: ", "</b>", "$", safmr$medRent2BR, "<br>",
+                "<b>", "Average Rent 2-Bedroom: ", "</b>", "$", safmr$medRent2BR, "<br>",
                 "<b>", "Rent Difference: ", "</b>", "$", safmr$RentDiff, "<br>"
                 )
 
