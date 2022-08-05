@@ -38,7 +38,7 @@ safmr <- st_read("data/safmr_zcta.geojson") %>%
 
 This map is generated using 
 
-* Small Area Fair Market Rent estimates from the Department of Housing and Urban Development for 2022
+* Small Area Fair Market Rent from the Department of Housing and Urban Development for 2022
 * Two-Bedroom average rent for multi-family apartment complexes from CoStar for Q1 2022
 
 CoStar data is aggregated to the zip code level and averaged for all complexes within the boundaries of the City of Dallas.
@@ -52,8 +52,8 @@ CoStar tracks properties with five or more units, so data on smaller properties 
 #max(safmr$RentDiff, na.rm = TRUE)
 
 rent.labels <- c("Less than SAFMR",
-                 "Up to $250 more than SAFRM",
-                 "More than $250 over SAFRM")
+                 "Up to $250 more than SAFMR",
+                 "More than $250 over SAFMR")
 
 rent.bins <-c(-500, 0, 250, 1500)
 rent.pal <- colorBin(palette = pal_cpaltri, 
@@ -90,7 +90,7 @@ leaflet() %>%
             pal = rent.pal, 
             values = ~rent.bins, 
             opacity = 1, 
-            title = "SAFRM to Average Rent Difference",
+            title = "SAFMR to Average Rent Difference",
             position = "bottomright",
             labFormat = function(type, cuts, p){  # Here's the trick
                                                   paste0(rent.labels)
