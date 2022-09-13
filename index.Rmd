@@ -1,5 +1,5 @@
 ---
-title: 'Home'
+title: 'SAFMR'
 output:
   distill::distill_article:
     toc:false:
@@ -24,14 +24,15 @@ libDB <- "C:/Users/micha/CPAL Dropbox/" # Michael Laptop
 
 ```{r, Data and File Import, include = FALSE}
 # simple boundary layer of the city of dallas
-dallas <- st_read("data/dallas_simpleboundary.geojson") %>%
+ntxcounty <- st_read("data/ntx_county.geojson") %>%
   st_transform(crs = 4326)
+
+ntxDissolve <- ntxcounty %>%
+  st_union(.)
 
 # layer of zip codes with safmr and average asking rent in city of dallas
 safmr <- st_read("data/safmr_zcta.geojson") %>%
-  st_transform(crs = 4326) %>%
-  filter(!is.na(medRent2BR)) %>%
-  st_intersection(., dallas)
+  st_transform(crs = 4326)
 ```
 
 ## Small Area Fair Market Rent Difference from Average Rent
@@ -39,12 +40,12 @@ safmr <- st_read("data/safmr_zcta.geojson") %>%
 This map is generated using 
 
 * Small Area Fair Market Rent from the Department of Housing and Urban Development for 2022
-* Two-Bedroom average rent for multi-family apartment complexes from CoStar for Q1 2022
+* Two-Bedroom average rent for multi-family apartment complexes from CoStar for Q3 2022
 
-CoStar data is aggregated to the zip code level and averaged for all complexes within the boundaries of the City of Dallas.
-The 'Rent Difference' metric calculates the difference between SAFMR and average rent for a zip code.
+CoStar data is aggregated to the zip code level and averaged for all complexes within the boundaries North Texas.
+The 'Rent Difference' metric calculates the difference between average rent for a zip code and SAFMR.
 
-CoStar tracks properties with five or more units, so data on smaller properties with 1-4 units is not reflected here.
+CoStar tracks properties with five or more units, data on smaller properties with 1-4 units is not reflected here.
 
 ```{r Leaflet Map, echo = FALSE, message=FALSE, warning=FALSE, layout = "l-body-outset", fig.height=10}
 #names(safmr)
@@ -55,17 +56,18 @@ rent.labels <- c("Less than SAFMR",
                  "Up to $250 more than SAFMR",
                  "More than $250 over SAFMR")
 
-rent.bins <-c(-500, 0, 250, 1500)
+rent.bins <-c(-1500, 0, 250, 1000)
 rent.pal <- colorBin(palette = pal_cpaltri, 
                      domain = safmr$RentDiff, 
                      bins = rent.bins, 
                      na.color = "#595959")
 
-bbox <- st_bbox(dallas) %>%
+bbox <- st_bbox(ntxDissolve) %>%
   as.vector()
 
-popupRent <- paste0("<b>", "Zip Code: ", "</b>", safmr$GEOID, "<br>",
+popupRent <- paste0("<b>", "Zip Code: ", "</b>", safmr$ZCTA, "<br>",
                 "<b>", "Multi-Family Properties: ", "</b>", safmr$TotMF, "<br>",
+                "<b>", "Total Units: ", "</b>", safmr$TotUnits, "<br>",
                 "<b>", "Fair Market Rent 2-Bedroom: ", "</b>", "$", safmr$FairMrkt2BR, "<br>",
                 "<b>", "Average Rent 2-Bedroom: ", "</b>", "$", safmr$medRent2BR, "<br>",
                 "<b>", "Rent Difference: ", "</b>", "$", safmr$RentDiff, "<br>"
@@ -84,7 +86,7 @@ leaflet() %>%
               highlight = highlightOptions(
                 weight = 4,
                 color = "#FFFFFF",
-                fillOpacity = 0.4,
+                fillOpacity = 0.2,
                 bringToFront = TRUE)) %>%
     addLegend(data = safmr,
             pal = rent.pal, 
