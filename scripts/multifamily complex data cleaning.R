@@ -3,13 +3,13 @@ library(sf)
 library(tigris)
 library(googlesheets4)
 
-safmr <- read_sheet(ss = "https://docs.google.com/spreadsheets/d/1ZpVSCtvHOlqhyOTPtsjbz3LlMPzKTJVAyvHEKkjViTM") %>%
-  distinct(.)
+safmr <- read_sheet(ss = "https://docs.google.com/spreadsheets/d/1VEjpNV2AyGVHYpJRkfUfrLycQPYbCTFhHPtMDkJ00pQ/") %>%
+  distinct()
 
 county <- tigris::counties(state = "TX")
 
 countyntx <- county %>%
-  filter(NAMELSAD %in% CPALtools::ntx_county) %>%
+  filter(NAME %in% c("Bonham", "Collin", "Cooke", "Dallas", "Denton", "Ellis", "Grayson", "Hunt", "Johnson", "Kaufman", "Parker", "Rockwall", "Tarrant", "Wise")) %>%
   st_transform(crs = 4269)
 
 zcta <- tigris::zctas(state = "TX",
@@ -19,7 +19,7 @@ zcta <- tigris::zctas(state = "TX",
 
 zctantx <- zcta[countyntx, ]
 
-mfntx <- rio::import("data/North Texas Family Apartments.csv") %>%
+mfntx <- rio::import("data/Multi-Family Apartments (September 2023).csv") %>%
   st_as_sf(coords = c(x = "longitude", y = "latitude"),
            crs = 4269) %>%
   mutate(lat = st_coordinates(.)[,1],
@@ -43,7 +43,7 @@ mfzcta <- mfntx %>%
   left_join(safmr, .) %>%
   left_join(zctantx, .) %>%
   filter(!is.na(TotUnits)) %>%
-  mutate(RentDiff = medRent2BR-FairMrkt2BR)
+  mutate(RentDiff = medRent2BR - fairMrkt2BR)
 
 plot(mfzcta["RentDiff"])
 

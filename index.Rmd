@@ -15,7 +15,8 @@ library(sf)
 library(leaflet)
 library(mapboxapi)
 library(rio)
-library(CPALtools)
+library(cpaltools)
+library(cpaltemplates)
 
 libDB <- "C:/Users/micha/CPAL Dropbox/" # Michael Laptop
 #libDB <- "E:/CPAL Dropbox/" # Michael Desktop
@@ -57,7 +58,7 @@ rent.labels <- c("Less than SAFMR",
                  "More than $250 over SAFMR")
 
 rent.bins <-c(-1500, 0, 250, 1000)
-rent.pal <- colorBin(palette = pal_cpaltri, 
+rent.pal <- colorBin(palette = c(palette_cpal_main[1], palette_cpal_main[4], palette_cpal_main[2]), 
                      domain = safmr$RentDiff, 
                      bins = rent.bins, 
                      na.color = "#595959")
@@ -68,7 +69,7 @@ bbox <- st_bbox(ntxDissolve) %>%
 popupRent <- paste0("<b>", "Zip Code: ", "</b>", safmr$ZCTA, "<br>",
                 "<b>", "Multi-Family Properties: ", "</b>", safmr$TotMF, "<br>",
                 "<b>", "Total Units: ", "</b>", safmr$TotUnits, "<br>",
-                "<b>", "Fair Market Rent 2-Bedroom: ", "</b>", "$", safmr$FairMrkt2BR, "<br>",
+                "<b>", "Fair Market Rent 2-Bedroom: ", "</b>", "$", safmr$fairMrkt2BR, "<br>",
                 "<b>", "Average Rent 2-Bedroom: ", "</b>", "$", safmr$medRent2BR, "<br>",
                 "<b>", "Rent Difference: ", "</b>", "$", safmr$RentDiff, "<br>"
                 )
