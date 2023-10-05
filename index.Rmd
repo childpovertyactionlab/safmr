@@ -2,8 +2,7 @@
 title: 'SAFMR'
 output:
   distill::distill_article:
-    toc:false:
-      theme: theme.css
+    toc: false
 favicon: "images/favicon.ico"
 github-repo: childpovertyactionlab/safmr
 ---
