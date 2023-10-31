@@ -1,0 +1,84 @@
+---
+title: 'SAFMR to MAR'
+---
+
+```{r Library Loading and Path Set-Up}
+#| include: false
+#### Libraries to load #####
+library(tidyverse)
+library(sf)
+library(leaflet)
+library(mapboxapi)
+library(rio)
+library(cpaltemplates)
+
+ntxcounty <- st_read("data/ntx_county.geojson") %>%
+  st_transform(crs = 4326)
+
+ntxDissolve <- ntxcounty %>%
+  st_union(.)
+
+# layer of zip codes with safmr and average asking rent in city of dallas
+safmr <- st_read("data/safmr_zcta.geojson") %>%
+  st_transform(crs = 4326)
+```
+
+This map is generated using 
+
+* Small Area Fair Market Rent from the Department of Housing and Urban Development for 2023
+* Two-Bedroom average rent for multi-family apartment complexes from CoStar for Q3 2023
+
+CoStar data is aggregated to the zip code level and averaged for all complexes within the boundaries North Texas.
+The 'Rent Difference' metric calculates the difference between average rent for a zip code and SAFMR.
+
+CoStar tracks properties with five or more units, data on smaller properties with 1-4 units is not reflected here.
+
+```{r Leaflet Map}
+#| column: screen-inset-shaded
+#| fig-height: 12
+rent.labels <- c("Less than SAFMR",
+                 "Up to $250 more than SAFMR",
+                 "More than $250 over SAFMR")
+
+rent.bins <-c(-1500, 0, 250, 1000)
+rent.pal <- colorBin(palette = c(palette_cpal_main[1], palette_cpal_main[4], palette_cpal_main[2]), 
+                     domain = safmr$RentDiff, 
+                     bins = rent.bins, 
+                     na.color = "#595959")
+
+bbox <- st_bbox(ntxDissolve) %>%
+  as.vector()
+
+popupRent <- paste0("<b>", "Zip Code: ", "</b>", safmr$ZCTA, "<br>",
+                "<b>", "Multi-Family Properties: ", "</b>", safmr$TotMF, "<br>",
+                "<b>", "Total Units: ", "</b>", safmr$TotUnits, "<br>",
+                "<b>", "Fair Market Rent 2-Bedroom: ", "</b>", "$", safmr$fairMrkt2BR, "<br>",
+                "<b>", "Average Rent 2-Bedroom: ", "</b>", "$", safmr$medRent2BR, "<br>",
+                "<b>", "Rent Difference: ", "</b>", "$", safmr$RentDiff, "<br>"
+                )
+
+leaflet() %>%
+  fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>%
+  addTiles(urlTemplate = cpal_mapbox, attribution = cpal_leaflet) %>%
+  addPolygons(data = safmr,
+              fillColor = ~rent.pal(RentDiff),
+              weight = 1,
+              opacity = 0.8,
+              color = "#FFFFFF",
+              fillOpacity = 0.7,
+              popup = ~popupRent,
+              highlight = highlightOptions(
+                weight = 4,
+                color = "#FFFFFF",
+                fillOpacity = 0.2,
+                bringToFront = TRUE)) %>%
+    addLegend(data = safmr,
+            pal = rent.pal, 
+            values = ~rent.bins, 
+            opacity = 1, 
+            title = "Market Asking Rent is:",
+            position = "bottomright",
+            labFormat = function(type, cuts, p){  # Here's the trick
+                                                  paste0(rent.labels)
+                             })
+```

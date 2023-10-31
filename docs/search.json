@@ -1,0 +1,9 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "SAFMR to MAR",
+    "section": "",
+    "text": "This map is generated using\n\nSmall Area Fair Market Rent from the Department of Housing and Urban Development for 2023\nTwo-Bedroom average rent for multi-family apartment complexes from CoStar for Q3 2023\n\nCoStar data is aggregated to the zip code level and averaged for all complexes within the boundaries North Texas. The ‘Rent Difference’ metric calculates the difference between average rent for a zip code and SAFMR.\nCoStar tracks properties with five or more units, data on smaller properties with 1-4 units is not reflected here."
+  }
+]
