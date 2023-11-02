@@ -25,7 +25,7 @@ safmr <- st_read("data/safmr_zcta.geojson") %>%
 
 This map is generated using 
 
-* Small Area Fair Market Rent from the Department of Housing and Urban Development for 2023
+* Small Area Fair Market Rent from the Department of Housing and Urban Development for FY 2024 for two-bedroom unit
 * Two-Bedroom average rent for multi-family apartment complexes from CoStar for Q3 2023
 
 CoStar data is aggregated to the zip code level and averaged for all complexes within the boundaries North Texas.
