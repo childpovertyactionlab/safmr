@@ -49,3 +49,44 @@ plot(mfzcta["RentDiff"])
 
 st_write(mfzcta, "data/safmr_zcta.geojson", delete_dsn = TRUE)
 st_write(countyntx, "data/ntx_county.geojson", delete_dsn = TRUE)
+
+#####
+tracts <- tigris::tracts(state = "TX",
+                         year = 2020,
+                         county = countyntx$NAMELSAD) %>%
+  transmute(TRACT = GEOID) %>%
+  st_transform(crs = 4269)
+
+mfntx <- rio::import("data/Multi-Family Apartments (September 2023).csv") %>%
+  st_as_sf(coords = c(x = "longitude", y = "latitude"),
+           crs = 4269) %>%
+  mutate(lat = st_coordinates(.)[,1],
+         lon = st_coordinates(.)[,2]) %>%
+  st_join(., tracts)
+
+mftract <- unique(mfntx$TRACT) %>%
+  as.data.frame()
+
+mftract <- mfntx %>%
+  st_drop_geometry(.) %>%
+  group_by(TRACT) %>%
+  summarize(TotUnits = sum(number_of_units, na.rm = TRUE),
+            TotMF = n(),
+            AvgSF = round(mean(avg_unit_sf, na.rm = TRUE), digits = 0),
+            medRent1BR = median(one_bedroom_effective_rent_unit, na.rm = TRUE),
+            medRent2BR = median(two_bedroom_effective_rent_unit, na.rm = TRUE),
+            medRent3BR = median(three_bedroom_effective_rent_unit, na.rm = TRUE),
+            medRent4BR = median(four_bedroom_effective_rent_unit, na.rm = TRUE)
+  ) %>%
+  ungroup() %>%
+  left_join(tracts, .) %>%
+  st_join(., zctantx) %>%
+  distinct(TRACT, .keep_all = TRUE) %>%
+  filter(!is.na(TotUnits)) %>%
+  left_join(safmr, .) %>%
+  mutate(RentDiff = medRent2BR - fairMrkt2BR) %>%
+  select(-ZCTA)
+
+plot(mftract["geometry"])
+
+st_write(mftract, "data/safmr_tract.geojson", delete_dsn = TRUE)
